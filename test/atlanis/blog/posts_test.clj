@@ -33,5 +33,5 @@
     (is (not (empty? (:content post))))))
 
 (deftest test-get-posts
-  (let [post-count (dec (count (file-seq (clojure.java.io/file "resources/posts/"))))]
+  (let [post-count (- (count (file-seq (clojure.java.io/file "resources/posts/"))) 2 )]
     (is (= (count (get-posts "resources/posts/")) post-count))))
