@@ -20,6 +20,7 @@
   "(progn
      (package-initialize)
      (require 'org)
+     (load-library \"ox-html\")
      (find-file \"%f\")
      (org-html-export-as-html nil nil nil t)
      (princ (buffer-string)))")
@@ -27,7 +28,7 @@
 (defn convert-org-to-html
   "Converts an Org file to HTML using the user's local emacs installation."
   [filename]
-  (:out (sh "emacs" "--batch" "--eval" (clojure.string/replace org-export-command #"%f" filename))))
+  (:out (sh "emacs" "--batch" "-q" "-l" "~/.emacs.d-el-get/init.el" "--eval" (clojure.string/replace org-export-command #"%f" filename))))
 
 (defn get-org-post
   "Gets a post from an Org file."
