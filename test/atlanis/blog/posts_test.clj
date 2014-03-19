@@ -19,7 +19,7 @@
 
 (deftest test-get-org-post
   (let [filename "resources/posts/echogenetic.org"
-        headers {:date "[2013-12-28 Sat 14:20]",
+        headers {:date "<2013-12-28 sab 14:20>",
                  :title "Echogenetic -- WUBWUB",
                  :postid "296",
                  :blog "rom",
