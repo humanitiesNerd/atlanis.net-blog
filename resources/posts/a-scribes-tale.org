@@ -1,6 +1,6 @@
 #+TITLE: A Scribe's Tale
 #+AUTHOR: J David Smith
-#+DATE: <2014-03-17 Mon 12:17>
+#+DATE: <2014-03-17 lun 12:17>
 #+CATEGORY: World of Warcraft
 #+TAGS: wow, inscription, auction house
 #+OPTIONS: toc:nil num:nil

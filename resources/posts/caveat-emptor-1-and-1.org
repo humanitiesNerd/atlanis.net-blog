@@ -1,6 +1,6 @@
 #+TITLE: Caveat Emptor: 1&1
 #+AUTHOR: J David Smith
-#+DATE: <2014-03-08 Sat 13:49>
+#+DATE: <2014-03-08 sab 13:49>
 #+OPTIONS: toc:nil num:nil
 
 In August of last year, I purchased this domain (atlanis.net) using [[https://www.1and1.com/][1&1]] as a

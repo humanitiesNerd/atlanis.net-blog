@@ -1,6 +1,6 @@
 #+TITLE: New Site (Built with Stasis)
 #+AUTHOR: J David Smith
-#+DATE: <2014-03-03 Mon 15:33>
+#+DATE: <2014-03-03 lun 15:33>
 #+OPTIONS: toc:nil num:nil
 #+CATEGORY: Linux, Programming, Clojure
 #+TAGS: linux, programming, clojure, blogging

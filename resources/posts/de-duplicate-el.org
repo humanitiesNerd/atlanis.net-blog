@@ -1,6 +1,6 @@
 #+TITLE: A Simple Extension Proposal for Delete-duplicate-lines
 #+AUTHOR: J David Smith
-#+DATE: <2014-03-05 Wed 19:34>
+#+DATE: <2014-03-05 mer 19:34>
 #+CATEGORY: Satire, Linux
 #+TAGS: satire, linux, emacs, emacs lisp
 #+OPTIONS: toc:nil num:nil
