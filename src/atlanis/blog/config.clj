@@ -1,3 +1,3 @@
 (ns atlanis.blog.config)
 
-(def site-root "http://atlanis.net/blog/")
+(def site-root "http://localhost/blog/build")
