@@ -15,7 +15,7 @@
    (assets/load-bundle "public" "/styles.css" ["/styles/syntax.css"
                                                "/styles/syntax-tweaks.css"])
    (assets/load-assets "public"
-                       ["/img/bg.jpg"])
+                       ["/img/bg.jpg" "/main.less"])
                                                ))
 
 (defn load-posts
