@@ -11,6 +11,12 @@
   [path]
   {:tag :link, :attrs {:rel "stylesheet" :href (str config/site-root path)}})
 
+(defn- background-image-link
+  "Creates a <script> tag containing the call to jquery to backstretch the background image"
+  [path]
+
+  {:tag :script, :content (str "$.backstretch(\""  path "\", {speed: 500});" )})
+
 (defn- inline-script
   "Creates an inline <script> tag."
   [request path]
@@ -23,7 +29,8 @@
   [request body]
   [:title] (after (map stylesheet-link (link/bundle-paths request ["/styles.css"])))
   [:h1.site-title :a] (set-attr :href config/site-root)
-  [:div#content] (content body))
+  [:div#content] (content body)
+  [:script#scripturl] (after (background-image-link (link/file-path request "/img/bg.jpg")) ))
 
 (def date-format
   (clj-time.format/formatter "HH:mm 'on' EEE, dd MMMM yyyy 'EST'"))
@@ -37,13 +44,13 @@
 
 (defsnippet all-posts (snip "templates/all-posts.html")
   [root] [posts]
-  [:article.post] (clone-for 
+  [:article.post] (clone-for
                    [post posts]
                    [:h1.entry-title :a] (do->
                                          (set-attr :href (str config/site-root (:path post)))
                                         (content (:title post)))
                    [:div#content] (do->
-                                   (remove-attr :id) 
+                                   (remove-attr :id)
                                    (content (html-snippet (:content post))))
                    [:a#comments-link] (do->
                                        (remove-attr :id)
