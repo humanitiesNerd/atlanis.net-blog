@@ -1,0 +1,567 @@
+#+TITLE: About Playground
+#+AUTHOR: Catonano
+#+DATE: <2014-04-22 mar 16:07>
+#+CATEGORY: Hadoop, cascalog, pigpen
+#+TAGS: hadoop, cascalog, pigpen
+#+OPTIONS: toc:nil num:nil
+
+* About Playground
+
+This started as an attempt to implement the linear regression algorithm in
+cascalog, following instructions from the famous [[http://www.cs.stanford.edu/people/ang//papers/nips06-mapreducemulticore.pdf][article]] by Andrew Ng
+and others
+
+[[https://mahout.apache.org/][Mahout]] already existed but that is in java and probably lower level
+than this.
+
+This is half a page of code and could be read by an high schooler.
+
+This is an exercise. In the future I'd like to try to implement the
+other algorithms that are discussed there
+
+* The main problem I had
+
+My biggest problem was to understand correctly the mathematical
+notation. I was not sure what was supposed to be a matrix and what was
+supposed to be a number or a vector. It was a type problem, if you
+like, and the language didn't help.
+
+The starting point is the canonical form
+
+\begin{equation}
+\theta^{*} = A^{-1}b 
+\end{equation}
+
+Keeping in mind that $X$ is the matrix whose rows are trining
+instances, if we set $A$ and $b$ like this
+
+\begin{equation}
+A = X^TX
+\end{equation}
+\begin{equation}
+b = X^T\vec{y}
+\end{equation}
+
+then it becomes
+
+\begin{equation}
+\theta^* = (X^TX)^{-1} X^T\vec{y}      
+\end{equation}
+
+Now we have to calculate $A = X^TX$ in a map reduce fashion. And then
+we will have to calculate $b = X^T\vec{y}$ in the same fashion. The
+following step should be to calculate the inversa of A which is
+$A^{-1}$
+
+And then multiply that for $b$.  
+
+Not sure $A^{-1}$ can be done in map reduce form, but the
+article doesn't even attempt it so I won't either.
+
+Now this is our golden rule:
+
+\begin{equation}
+A = X^TX = \sum_{i=1}^m (x_i x_i^T) 
+\end{equation}
+\begin{equation}
+b = X^T\vec{y} = \sum_{i = 1}^m x_i y_i
+\end{equation}
+
+Now, let's take the first equation. In my world, $X^{T}X$ is a matrix
+multiplication. And in matrices multiplications, you take a row from
+the first matrix, then you take a column from
+the second matrix and then you multiply the numbers from each position
+in the row and column and then you sum the results. Finally you get a
+number. 
+
+So, Let's say that, $x_i$ is the notation
+for row vectors. Like this 
+
+\begin{equation}
+x_i = \begin{bmatrix}
+1 & 2 & 3
+\end{bmatrix}
+\end{equation}  
+
+so I take that $x_i$ is a row of $X^{T}$. 
+
+And a row transposed is a column, right ? Like this
+
+\begin{equation}
+x_i^{T} = \begin{bmatrix}
+1 \\
+2 \\
+3 \\
+\end{bmatrix}
+\end{equation}
+
+So we have
+
+\begin{equation}
+
+x_i * x_i^{T} =
+
+
+
+
+\begin{bmatrix}
+1 & 2 & 3
+\end{bmatrix}
+
+*
+
+\begin{bmatrix}
+1 \\
+2 \\
+3 \\
+\end{bmatrix}
+
+\end{equation}
+
+The result is not a matrix. It's a number. It's 14. Some lighthearthed could
+argue that it's a 1 per 1 matrix.
+
+But we don't need play on words, here. It's a number.
+
+And if the sum $\sum_{i=1}^m (x_i x_i^T)$ sums numbers, then it
+produces a number. But it ought to give us a matrix, right ?
+
+So this must be wrong. Let's try the other way around. If $x_i$ is a
+column, then we have
+
+\begin{equation}
+x_i * x_i^{T} =
+
+\begin{bmatrix}
+1 \\
+2 \\
+3 \\
+\end{bmatrix}
+
+*
+ 
+\begin{bmatrix}
+1 & 2 & 3
+\end{bmatrix}
+
+=
+
+ \begin{pmatrix}
+ 1 & 2 & 3 \\
+ 2 & 4 & 6 \\
+ 3 & 6 & 9 \\ 
+ \end{pmatrix}
+
+\end{equation}
+
+Seems better. Now the sum sums matrices and the final result is a matrix.
+
+So don't be misled by the passage
+
+\begin{equation}
+X^{T}X = \sum_{i=1}^m (x_i x_i^T)
+\end{equation}
+
+this does NOT mean that the sum is a fancy way to describe the traditional
+matrices product. The operation that it describes is different. The
+results that such operation produces are equal to those that would have
+been produced also by the traditional matrices product.
+
+The equality here is NOT about operations. It's about results.
+
+This is the key point of the whole "summation form" thing.
+
+If you produce a matrix at every iteration and then you have to sum
+them up, mapping this process on mappers and reducers is at hand.
+
+In fact, if you know about hadoop clusters and the mappers and
+reducers thing, you can figure out that every mapper will produce a
+subset of the matrices, it will sum up the matrices in its subset.
+
+And then it will send its result matrix to its reducer.
+
+That's it.
+
+Now, as for the second formula, that, I remind you, is
+
+\begin{equation}
+b = X^T\vec{y} = \sum_{i = 1}^m x_i y_i
+\end{equation}
+
+there's a slighly different trap here.
+
+If $x_i$ is a column vector, then $y_i$ is column vector too, right ?
+Because the notation is the same, only one variable has changed. Right
+?
+
+Wrong.
+
+There's a hidden information here.
+
+There is some hidden information to be considered, here.
+
+It's the type of $\vec{y}$. 
+
+$X$ was a matrix, so $x_i$ was a vector. $\vec{y}$ is a vector, so
+$y_i$ is a number.
+
+
+More on this in a few lines.
+
+So, again, how do you interpet this formula ?
+
+\begin{equation}
+\sum_{i = 1}^m x_i y_i
+\end{equation}
+
+Keep in mind that it's supposed to produce a column vector.
+
+If you make the error I made of thinking that because the notation is
+the same for column vectors, than $y_i$ is a column vector, you're in
+for a surprise.
+
+It's not.
+
+The thing is subtle. Actually $x_i$ is the ith row of a m x n matrix, so
+it's a 1 x n row vector. $y_i$ is the ith row of a m x 1 matrix, so
+it's a 1 x 1 row vector, that is, a number.
+
+This notation and set of assumptions seem to be made to mislead. What
+a lousy way of writing.
+
+The old joke about Microsoft comes to my mind. Hit by a thunder, tools
+out of service, floating in a snow storm, the crew of a helicopter
+show a sign to Microsoft employees in a building they are flying by
+saying "where are we ?" and they write back "on a helicopter"
+
+Correct but meaningless.
+
+I feel here we are in a similar spot.
+
+So, to cut it short, $x_i$ is a column vector and $y_i$ is a number.
+
+Every iteration produces a vector and they are to be summed up.
+
+Again subsets can be processed by mappers and a single vector can be
+sent by each mapper to its reducer.
+
+* Some code
+
+I made this for the first time in [[cascalog.org][cascalog]]. Because there were
+elementar linear algebra operations to be made, I used incanter as an
+underneath library.
+
+I came to a point where it worked in the REPL.
+
+Then I decidet to try to add some midje tests, to help keep it in
+check and to help expressing what it did and what were concepts
+involved.
+
+But I couldn't manage to have midje cascalog working.
+
+Because in the meantime [[https://github.com/mikera/core.matrix][clojure.core.matrix]] had come up, I tried to
+reimplement it wit it underneath instead of incanter.
+
+The testing framework worked this time, but I couldn't reproduce the
+process, not even in the REPL. The query didn't work and I couldn't
+figure out why. Ugh.
+
+Luckly also [[https://github.com/Netflix/PigPen][PigPen]] had come out. I tried with that and I implemetned
+it in an afternoon, with clojure.core.matrix, AND unit tests. Tests made
+with the provided framework, which is not midje.
+
+But still: wow.
+
+So here I'll illustrate code made with the couple cascalog and
+incanter and also made with pigpen and clojure.core.matrix.
+
+** The data I started from
+
+I took the same data as the article, that come from the [[http://archive.ics.uci.edu/ml/datasets.html][UCI machine learning datasets]]
+
+The first dataset is the "Adult" one. Data are categorical and the $y$
+column is yes/no or 0 and 1 if you prefer. That is, apllying linear
+regression to this dataset doesn't make sense so much. But the artcle
+went this way, so I did too. Other datasets cited are more
+meaningfully treated with linear regression too, but I didn't prepare them
+yet. Maybe I will, in the future.
+
+Our matrix is like this
+
+|  / | <>               |     <> | <>        | <> | <>                 | <>                | <>            | <>    | <>   |   <> | <> | <> | <>            | <>    |
+| 39 | State-gov        |  77516 | Bachelors | 13 | Never-married      | Adm-clerical      | Not-in-family | White | Male | 2174 |  0 | 40 | United-States | <=50K |
+| 50 | Self-emp-not-inc |  83311 | Bachelors | 13 | Married-civ-spouse | Exec-managerial   | Husband       | White | Male |    0 |  0 | 13 | United-States | <=50K |
+| 38 | Private          | 215646 | HS-grad   |  9 | Divorced           | Handlers-cleaners | Not-in-family | White | Male |    0 |  0 | 40 | United-States | <=50K |
+| 53 | Private          | 234721 | 11th      |  7 | Married-civ-spouse | Handlers-cleaners | Husband       | Black | Male |    0 |  0 | 40 | United-States | <=50K |
+
+
+We transform it into the so calld $X$ matrix, that's expressed in numbers
+
+|  / | <> |     <> | <> | <> | <> | <> | <> | <> | <> |   <> | <> | <> | <> | <> |
+| 39 |  7 |  77516 |  3 | 13 |  5 | 11 |  6 |  3 |  4 | 2174 |  0 | 40 |  3 |  1 |
+| 50 |  3 |  83311 |  3 | 13 |  3 |  7 |  5 |  3 |  4 |    0 |  0 | 13 |  3 |  1 |
+| 38 |  2 | 215646 |  6 |  9 |  4 |  9 |  6 |  3 |  4 |    0 |  0 | 40 |  3 |  1 |
+| 53 |  2 | 234721 |  5 |  7 |  3 |  9 |  5 |  7 |  4 |    0 |  0 | 40 |  3 |  1 |
+
+This transformation from text to numbers is outside the scope of this
+write up. I made it with cascalog, but it could be done with other
+means.
+
+Anyway, the result is [[https://dl.dropboxusercontent.com/u/8311241/playgound-rebuild/X-matrix/part-00000][here]]. If you wanna try, just download it and
+place it in X-matrix/adult.data in the project root.
+
+** With cascalog
+
+The work I've done with cascalog until now is [[https://github.com/humanitiesNerd/playground][here]]. It's
+abandoned, now. It's just a testimony of what was done.  
+
+Every line of our $X$ matrix will be transposed to become a column
+and then the column will be multiplied for itself as a row, as I
+already wrote.
+
+This operation will produce a matrix.
+
+So each one of these lines will produce a matrix !
+
+#+BEGIN_SRC clojure
+(defmapcatop vectormult [line]
+  [[(coremult (to-int-vector line))]]
+)
+#+END_SRC
+
+"defmapcatop" is a facility provided by cascalog. It's supposed to be
+along the lines of the plain vanilla clojure mapcat. 
+
+Here we are defining a defmapcatop called "vectormult". It multiplies
+a vector as a column for itsself as a row, producing a matrix. *On top
+of an hadoop cluster.*
+
+It takes a text line, it turns it into an integer numbers vector and
+with it it calls a plain vanilla clojure function returning a m x n
+numbers array (a matrix).
+
+If you fire up a terminal, launch the REPL and test the coremult
+function live, you get
+
+#+BEGIN_SRC clojure
+user=> (coremult [3 9 5 1])
+[ 9,0000 27,0000 15,0000
+27,0000 81,0000 45,0000
+15,0000 45,0000 25,0000]
+
+user=> 
+
+#+END_SRC
+
+Please not the the last digit of the vector, that is 1, is being
+ignored because it's supposed to be a y value. More on this later (maybe).
+
+Now, because with "defmapcatop" we created a cascalog provided thing,
+we can use that in a so called query.
+
+In the code there is already a funtion returning a query using our
+defmapcatop. It's called =produce-A=. $A$, I remind you, is $A = X^TX$.
+
+Here's its definition ("tap" is a facility provided by cascalog to
+read and write files from the disk)
+
+#+BEGIN_SRC clojure
+(defn produce-A [tap]
+  (<- [?final-matrix]
+      (tap ?line)
+      (vectormult ?line :> ?intermediate-matrix)
+      (matrix-sum ?intermediate-matrix :> ?final-matrix)
+      )
+  )
+
+#+END_SRC
+
+We could unit test the query returned by this function, but first a few
+notes:
+
++ "tap" is a facility provided by cascalog used for reading and
+  writing files on the disk
++ the symbol "<-" creates a query and does NOT execute it. So this
+  function returns an unexecuted query.
++ our query returns tuples (the fundamental unit cascalog deals
+  with) containing one only value. That value is gonna be contained in the
+  "?final-matrix" variable. Cascalog can be startling in that the
+  output variable is declared first. Also Cascalog variable names start
+  with a question mark or an exlamation mark.
++ the first line of the query =(tap ?line)= just reads a line at a
+  time from the file and puts such a line in the =?line=
+  variable.
++ now we are calling the defmapcatop we defined earlier and we are
+  passing the line as an argument. The result (a matrix) is gonna be
+  put in the variable =?intermediate-matrix=
++ now we're summing all the intermediate matrices to produce a final
+  matrix. =matrix-sum= is made with another facility provided by
+  cascalog and it implements the functionality on the reducers side.
+
+So the process goes along these lines: the $X$ matrix is being split in submatrices
+and each submatrix is being processed by a mapper. The mapper produces
+a new matrix for each row in its submatrix and then sums them all up. The resulting
+matrix is the mapper output.
+
+The reducers will receive a matrix from each mapper and again sum them up.
+
+So the end result will be the $A$ matrix ! We have multiplied $X^T$ for $X$ !
+
+And this is the first step. The following one would be to produce the
+$b$ vector, with the same idea.
+
+Here's the thing
+
+#+BEGIN_SRC clojure
+
+(defn produce-b [tap]
+   (<- [?final-vector]
+       (tap ?line)
+       (vectormult2 ?line :> ?intermediate-vector)
+       (matrix-sum ?intermediate-vector :> ?final-vector)
+       ))
+
+#+END_SRC
+
+As you can see, it's extremely similar to the previous one. The only
+difference is that the last digit in the vector is gonna be singled
+out, treated as a scalar, that is, a number, and then the remaining
+vector will be multiplied by it, cell by cell.
+
+=matrix-sum= is exactly the same.
+
+So, if you have downloaded the data file (it should be in
+X-matrix/adult.data in your project root) you can fire up a terminal
+and try this
+
+#+BEGIN_SRC clojure
+user=> (require 'playground.operations)
+Run `(doc midje)` for Midje usage.
+Warning, null is deprecated; use #'cascalog.logic.def/defbufferfn.
+Warning, null is deprecated; use #'cascalog.logic.def/defmapcatfn.
+Warning, null is deprecated; use #'cascalog.logic.def/defmapcatfn.
+nil
+user=> (in-ns 'playground.operations)
+#<Namespace playground.operations>
+playground.operations=> 
+
+#+END_SRC
+
+The warnings are because I started with a previous version of
+cascalog, then moved to a newer one and some calls were changed.
+
+My bad.
+
+#+BEGIN_SRC clojure
+playground.operations=> (my-workflow "X-matrix/part-00000")
+
+#+END_SRC
+
+and see what happens. 
+
+It pours a tsunami of output in your terminal, but if all goes well it
+ends up returning a prompt to you and the last line should be a terse
+
+"true"
+
+Now there should be a folder called "A-matrix" in
+your project root containing the results of the computation. The one
+you're interested in is "part-00000": it contains the $A$ matrix.
+
+Now, I was preparing to test with midje
+
+#+BEGIN_SRC clojure
+(comment 
+(fact
+ (produce-A (lfs-textline "X-matrix/tests.txt")) => (produces [[13.0 21.0 21.0 34.0]]))
+)
+#+END_SRC
+
+but because I couldn't manage to get midje working (the symbol "fact"
+kept being unreachable) I gave up.
+
+I suspect that because my dealing with namespaces is not exactly
+clean, midje gets confused. But frankly I'm not motivated enough to investigate further.
+
+If someone with more experience than I have at namespaces should see
+an obvious solution, I wouldn't mind to accept a pull request. But don't sweat it.
+
+*** Second attempt with cascalog
+
+I made a second attempt with clojure.core-matrix instead of incanter.
+
+It's in a different repository, in the "doesntwork" branch. It's [[https://github.com/humanitiesNerd/playground-rebuild/tree/doesntwork][here]], anyway.
+
+This time midje worked but I couldn't make a query working with the
+new datatype.
+
+So I commented the last line in the query building function
+
+and adapted the unit test to the partial result. Like that, you can
+run the tests and see they pass. Well, wow. Sigh.
+
+** With pigpen
+
+Ok, by this time I had worked out the understanding of matrices,
+vectors and numbers.
+
+I also had some fundamental clojure functions dealng with such stuff
+and I knew what the process had to be. I had written a cascalog
+workflow, afterall.
+
+I even gave up on midje because I couldn't get it going and in the
+pigpen examples they didn't use it. Hadn't I tried with midje it would
+have taken me even less.
+
+It took me an afternoon, though. It was incredibly straightforward. It
+works (on test data) and it has unit tests. The code is way shorter
+and it's plain vanilla clojure.
+
+For example, producing the $A$ matrix is just a plain simple map reduce cycle. Look
+
+#+BEGIN_SRC clojure
+(defn produce-A [data]
+  (pig/reduce m/add
+              (pig/map coremult (data))))
+
+#+END_SRC
+
+That's all.
+
+The $b$ vector goes like this
+
+#+BEGIN_SRC clojure
+(defn produce-b [data]
+  (pig/reduce m/add (pig/map coremult2 (data))))
+#+END_SRC
+
+AND there are the unit tests:
+
+#+BEGIN_SRC clojure 
+(deftest test-produce-A
+  (let [calculated-data (pig/dump (produce-A test-data))
+        expected-data [[[[13 21 17] [21 34 27] [17 27 25]]]]]
+    (is (= calculated-data expected-data)))
+  )
+
+(deftest test-produce-b
+  (let [calculated-data (pig/dump (produce-b test-data))
+        expected-data [[[5 8 7]]]]
+    (is (= calculated-data expected-data))))
+
+#+END_SRC
+
+ONE afternoon.
+
+It's in the same "playground-rebuild" repository in the "pigpen" branch. [[https://github.com/humanitiesNerd/playground-rebuild/tree/pigpen][Here]].
+
+The only glitch is that the default reader returns vectors of strings
+and I should write a cycle just to turn them into numbers.
+
+Or I should provide a customized pig based reader, that I cannot do,
+never dealt with pig.
+
+But, I mean, it shouldn't be that hard.
+
+It was the hell of an exploration.
+
