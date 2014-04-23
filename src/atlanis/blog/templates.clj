@@ -25,10 +25,10 @@
                  (filter #(= path (:original-path %)))
                  first :contents)})
 
-(deftemplate layout "templates/layout.html"
+(deftemplate layout "templates/playground.html"
   [request body]
-  [:title] (after (map stylesheet-link (link/bundle-paths request ["/styles.css"])))
-  [:h1.site-title :a] (set-attr :href config/site-root)
+  ;[:title] (after (map stylesheet-link (link/bundle-paths request ["/styles.css"])))
+  ;[:h1.site-title :a] (set-attr :href config/site-root)
   [:div#content] (content body)
   [:script#scripturl] (after (background-image-link (link/file-path request "/img/bg.jpg")) ))
 
@@ -46,19 +46,12 @@
   [root] [posts]
   [:article.post] (clone-for
                    [post posts]
-                   [:h1.entry-title :a] (do->
+                   [:h1.title :a] (do->
                                          (set-attr :href (str config/site-root (:path post)))
                                         (content (:title post)))
                    [:div#content] (do->
                                    (remove-attr :id)
-                                   (content (html-snippet (:content post))))
-                   [:a#comments-link] (do->
-                                       (remove-attr :id)
-                                       (set-attr :href (str config/site-root (:path post) "#disqus_thread")))
-                   [:a#timestamp] (do->
-                                   (remove-attr :id)
-                                   (set-attr :href (str config/site-root (:path post)))
-                                   (content (date-formatter (:date post))))))
+                                   (content (html-snippet (:content post))))))
 
 (defsnippet one-post (snip "templates/one-post.html")
   [root] [post next-post]
