@@ -44,14 +44,15 @@
 
 (defsnippet all-posts (snip "templates/all-posts.html")
   [root] [posts]
-  [:article.post] (clone-for
-                   [post posts]
-                   [:h1.title :a] (do->
+  [:article.post] (do-> (clone-for
+                         [post posts]
+                         [:h1.title :a] (do->
                                          (set-attr :href (str config/site-root (:path post)))
-                                        (content (:title post)))
-                   [:div#content] (do->
-                                   (remove-attr :id)
-                                   (content (html-snippet (:content post))))))
+                                         (content (:title post)))
+                         [:div#content] (do->
+                                         (remove-attr :id)
+                                         (content (html-snippet (:content post)))))
+                        unwrap))
 
 (defsnippet one-post (snip "templates/one-post.html")
   [root] [post next-post]
