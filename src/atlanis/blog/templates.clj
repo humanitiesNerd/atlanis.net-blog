@@ -11,11 +11,16 @@
   [path]
   {:tag :link, :attrs {:rel "stylesheet" :href (str config/site-root path)}})
 
+(defn- stylesheet-less-link [path]
+  {:tag :link, :attrs {:rel "stylesheet/less" :type "text/css" :href (str config/site-root path)}})
+
 (defn- background-image-link
   "Creates a <script> tag containing the call to jquery to backstretch the background image"
   [path]
 
   {:tag :script, :content (str "$.backstretch(\""  path "\", {speed: 500});" )})
+
+
 
 (defn- inline-script
   "Creates an inline <script> tag."
@@ -27,7 +32,8 @@
 
 (deftemplate layout "templates/playground.html"
   [request body]
-  [:title] (after (map stylesheet-link (link/bundle-paths request ["/styles.css"])))
+  [:title]  (after (map stylesheet-link (link/bundle-paths request ["/styles.css"])))
+  [:meta] (before (stylesheet-less-link (link/file-path request "/main.less")))
   ;[:h1.site-title :a] (set-attr :href config/site-root)
   [:div#content] (content body)
   [:script#scripturl] (after (background-image-link (link/file-path request "/img/bg.jpg")) ))
