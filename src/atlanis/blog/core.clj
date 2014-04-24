@@ -12,6 +12,9 @@
 (defn get-assets
   []
   (concat
+
+   (assets/load-bundle "public" "/styles.css" ["/styles/org.css"])
+
    (assets/load-assets "public"
                        ["/img/bg.jpg" "/main.less"])
                                                ))
