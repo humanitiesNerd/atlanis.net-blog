@@ -10,7 +10,10 @@
                  [optimus "0.14.2"]
                  [enlive "1.1.5"]
                  [me.raynes/fs "1.4.4"]]
-  :ring {:handler atlanis.blog.core/app}
+  :ring {:handler atlanis.blog.core/app
+          :auto-reload? true
+          :auto-refresh? true
+          }
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
              :dev {:plugins [[lein-ring "0.8.10"]]

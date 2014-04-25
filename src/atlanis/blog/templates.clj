@@ -32,8 +32,9 @@
 
 (deftemplate layout "templates/playground.html"
   [request body]
-  [:title]  (after (map stylesheet-link (link/bundle-paths request ["/styles.css"])))
-  [:meta] (before (stylesheet-less-link (link/file-path request "/main.less")))
+  [:title] (do->   (after (map stylesheet-link (link/bundle-paths request ["/styles.css"])))
+                   (before (stylesheet-less-link (link/file-path request "/main.less"))))
+
   ;[:h1.site-title :a] (set-attr :href config/site-root)
   [:div#content] (content body)
   [:script#scripturl] (after (background-image-link (link/file-path request "/img/bg.jpg")) ))

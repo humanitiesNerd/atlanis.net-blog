@@ -17,6 +17,31 @@ pre {
     font-size: 90%;
     overflow:auto;
 }
+
+pre.src,
+pre.example {
+	background: rgba(119, 119, 119, 0.5);
+	font-family: "Courier 10 Pitch", Courier, monospace;
+	font-size: 0.9375em;
+	line-height: 1.6em;
+	margin-top: -2px;
+	margin-bottom: 24px;
+	max-width: 100%;
+	overflow: auto;
+	padding: 24px;	
+}
+
+pre.example {
+	border-top: solid 5px #9c0001;
+	border-bottom: solid 5px #9c0001;
+}
+
+code, kbd, tt, var {
+  font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+  font-size: 0.875em;
+  line-height: 1.71429em;
+}
+
 table { border-collapse: collapse; }
 td, th { vertical-align: top;  }
 th.right  { text-align:center;  }
@@ -57,18 +82,6 @@ body {
 blockquote p {
 	font-size: inherit;
 	font-style: italic;
-}
-
-pre.src,
-pre.example {
-	background-color: #080808;
-	color: #f4f4f4;
-	font-size: 13px;
-}
-
-pre.example {
-	border-top: solid 5px #9c0001;
-	border-bottom: solid 5px #9c0001;
 }
 
 #footnotes {
