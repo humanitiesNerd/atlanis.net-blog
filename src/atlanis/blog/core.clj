@@ -13,7 +13,9 @@
   []
   (concat
 
-   (assets/load-bundle "public" "/styles.css" ["/styles/org.css"])
+   (assets/load-bundle "public" "/styles.css"
+                       ["/styles/org.css"
+                        "/bower_components/gridism/gridism.css" ])
 
    (assets/load-assets "public"
                        ["/img/bg.jpg" "/main.less"])
