@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Playground</title>
+<!-- 2014-03-27 gio 23:41 -->
+
+
+
+<meta  charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta  name="author" content="catonano">
+
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Oswald:400,300,700">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=EB+Garamond">
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.0.3.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.0/less.min.js"></script>
+<script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 133,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
+</head>
+<body>
+
+  <header>
+    <div class="grid"> 
+      <div class="unit whole center-on-mobiles" align="center"> 
+        <h1 class="title">Playground</h1>
+      </div>
+    </div>
+  </header>
+
+<div class="grid"> 
+<div id="content" class="unit whole">
+
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">About Playground</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+This started as an attempt to implement the linear regression algorithm in
+cascalog, following instructions from the famous <a href="http://www.cs.stanford.edu/people/ang//papers/nips06-mapreducemulticore.pdf">article</a> by Andrew Ng
+and others
+</p>
+
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">The main problem I had</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+My biggest problem was to understand correctly the mathematical
+notation. I was not sure what was supposed to be a matrix and what was
+supposed to be a number or a vector. It was a type problem, if you
+like, and the language didn't help.
+</p>
+</div>
+
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1">The data I started from</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+I took the same data as the article, that come from the <a href="http://archive.ics.uci.edu/ml/datasets.html">UCI machine learning datasets</a>
+</p>
+
+</div>
+</div>
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2">With cascalog</h3>
+<div class="outline-text-3" id="text-3-2">
+
+
+<p>
+The work I've done with cascalog until now is <a href="https://github.com/humanitiesNerd/playground">here</a>. It's
+abandoned, now. It's just a testimony of what was done.  
+</p>
+
+</div>
+</div>
+
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3">With pigpen</h3>
+<div class="outline-text-3" id="text-3-3">
+
+<p>
+The \(b\) vector goes like this
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure">(defn produce-b [data]
+  (pig/reduce m/add (pig/map coremult2 (data))))
+</pre>
+</div>
+
+<p>
+AND there are the unit tests:
+</p>
+
+
+
+
+
+
+
+
+
+
+<div class="org-src-container">
+
+<pre class="src src-clojure">(deftest test-produce-A
+  (let [calculated-data (pig/dump (produce-A test-data))
+	expected-data [[[[13 21 17] [21 34 27] [17 27 25]]]]]
+    (is (= calculated-data expected-data)))
+  )
+
+(deftest test-produce-b
+  (let [calculated-data (pig/dump (produce-b test-data))
+	expected-data [[[5 8 7]]]]
+    (is (= calculated-data expected-data))))
+</pre>
+</div>
+
+<p>
+ONE afternoon.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p>
+It's in the same "playground-rebuild" repository in the "pigpen" branch. <a href="https://github.com/humanitiesNerd/playground-rebuild/tree/pigpen">Here</a>.
+</p>
+
+<p>
+The only glitch is that the default reader returns vectors of strings
+and I should write a cycle just to turn them into numbers.
+</p>
+
+<p>
+Or I should provide a customized pig based reader, that I cannot do,
+never dealt with pig.
+</p>
+
+<p>
+But, I mean, it shouldn't be that hard.
+</p>
+
+<p>
+It was the hell of an exploration.
+</p>
+
+
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="postamble" class="status">
+
+<script type="text/javascript" id="scripturl" 
+src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
+</div>
+
+
+</body>
+</html>
